@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import Presto
+@_exported import Presto
 
 @MainActor
 public protocol Tapioca<R> {
