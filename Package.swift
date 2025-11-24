@@ -38,7 +38,7 @@ extension String {
     static let Presto = "https://github.com/Project-Academy/Presto"
 }
 extension Package.Dependency {
-    static var Presto: Package.Dependency { .package(url: .Presto, branch: "main") }
+    static var Presto: Package.Dependency { .package(url: .Presto, from: "1.0.0") }
 }
 extension Target.Dependency {
     static var Presto: Target.Dependency { .product(name: "Presto", package: "Presto") }

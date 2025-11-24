@@ -1,13 +1,13 @@
 {
-  "originHash" : "8ad286ec4759dcfa572356475237f3bb983c5e8a626f863786f0ea0206828158",
+  "originHash" : "16d5316908b3ce875aff850959d82c4880f08320f4e43901b1deff1a0d4ddbfb",
   "pins" : [
     {
       "identity" : "presto",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Project-Academy/Presto",
       "state" : {
-        "branch" : "main",
-        "revision" : "a3b48a78b835e7dca873b2d9cc653e9cbc2fdef6"
+        "revision" : "5707f3146b525e5ddf2fd7d1f6ad593b12b9938a",
+        "version" : "1.1.0"
       }
     }
   ],
