@@ -109,9 +109,9 @@ extension APIRequest {
             // Parse Parameters according to contentType.
             switch updated.content {
             case .JSON:
-                urlReq.httpBody = try updated.paramTransformer(params)
+                urlReq.httpBody = try updated.paramTransformer(updated.params)
             case .Form:
-                urlReq.formatForm(params)
+                urlReq.formatForm(updated.params)
             default: break
             }
         }
