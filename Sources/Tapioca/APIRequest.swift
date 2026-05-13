@@ -9,7 +9,13 @@ import Foundation
 import Presto
 
 public protocol APIRequest: Sendable {
-    associatedtype API: Tapioca<Self>
+    // `API: Tapioca` (not `Tapioca<Self>`) — relaxed from the original
+    // `<Self>` formulation so generic conformers like
+    // `DefaultRequest<API>` can be declared without a self-referential
+    // constraint. The methods that genuinely need `API.R == Self`
+    // (the `response()` family below) are gated by a conditional
+    // extension instead.
+    associatedtype API: Tapioca
     
     //--------------------------------------
     // MARK: - VARIABLES -
@@ -63,13 +69,11 @@ public protocol APIRequest: Sendable {
     // MARK: - BUILDER -
     //--------------------------------------
     func build() throws -> Self
-    
-    //--------------------------------------
-    // MARK: - RESPONSES -
-    //--------------------------------------
-    @MainActor
-    func response() async throws -> Response
-    func response<T: Decodable>(as type: T.Type) async throws -> T
+
+    // `response()` / `response(as:)` are NOT protocol requirements —
+    // they're declared in the conditional extension below, gated on
+    // `Self == API.R`, because the underlying call to
+    // `API.response(for: self)` needs that equality to type-check.
 }
 
 
@@ -118,16 +122,7 @@ extension APIRequest {
         updated.urlRequest = urlReq
         return updated
     }
-    
-    @MainActor
-    public func response() async throws -> Response {
-        try await API.response(for: self.build())
-    }
-    public func response<T: Decodable>(as type: T.Type = T.self) async throws -> T {
-        let data = try await self.response().data
-        return try JSONDecoder().decode(type, from: data)
-    }
-    
+
     /**
      Sets the content type for the request body.
      
@@ -156,6 +151,28 @@ extension APIRequest {
     }
     
     
+}
+
+//--------------------------------------
+// MARK: - RESPONSE-DISPATCH -
+//--------------------------------------
+// Methods that fire the request through `API.response(for: self)` —
+// the call needs `self` to be of type `API.R`, hence the conditional
+// constraint. Every kit-defined `Request`/`DefaultRequest<API>` will
+// satisfy this trivially because its parent API declares
+// `typealias R = Request`.
+
+extension APIRequest where Self == API.R {
+
+    @MainActor
+    public func response() async throws -> Response {
+        try await API.response(for: self.build())
+    }
+    public func response<T: Decodable>(as type: T.Type = T.self) async throws -> T {
+        let data = try await self.response().data
+        return try JSONDecoder().decode(type, from: data)
+    }
+
     public var GET: Response {
         get async throws {
             let request = self.method(.GET)
@@ -179,5 +196,4 @@ extension APIRequest {
         let request = self.method(.POST)
         return try await request.response(as: type)
     }
-    
 }
